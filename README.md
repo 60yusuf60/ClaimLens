@@ -75,5 +75,5 @@ NEXT_PUBLIC_API_URL=http://localhost:8001
 
 ## Live Demo
 
-- 🌐 Frontend: Coming soon
-- 🔧 Backend: Coming soon
+- 🌐 Frontend: https://claim-lens-one.vercel.app
+- 🔧 Backend: https://claimlens-production.up.railway.app
