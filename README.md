@@ -6,10 +6,19 @@
 
 ## Screenshots
 
+### 🏠 Homepage
 ![Homepage](screenshots/homepage.png)
+
+### 📝 File a Claim
 ![Claim Form](screenshots/claim-form.png)
+
+### 📷 Upload Photos
 ![Photo Upload](screenshots/photo-upload.png)
+
+### 🤖 AI Analysis Result
 ![AI Result](screenshots/result.png)
+
+### 🏢 Agent Portal
 ![Agent Portal](screenshots/agent-portal.png)
 
 ## What is ClaimLens?
