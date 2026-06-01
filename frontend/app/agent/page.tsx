@@ -3,6 +3,19 @@
 import { useEffect, useState } from 'react'
 
 export default function AgentPage() {
+  const [authenticated, setAuthenticated] = useState(false)
+  const [password, setPassword] = useState('')
+  const [passwordError, setPasswordError] = useState(false)
+
+  const handleLogin = () => {
+    if (password === process.env.NEXT_PUBLIC_AGENT_PASSWORD) {
+      setAuthenticated(true)
+      setPasswordError(false)
+    } else {
+      setPasswordError(true)
+    }
+  }
+
   const [claims, setClaims] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const [selected, setSelected] = useState<any>(null)
@@ -13,6 +26,7 @@ export default function AgentPage() {
   const [search, setSearch] = useState('')
 
   useEffect(() => {
+    if (!authenticated) return
     const fetchClaims = async () => {
       try {
         const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/claims/`)
@@ -24,7 +38,7 @@ export default function AgentPage() {
       setLoading(false)
     }
     fetchClaims()
-  }, [])
+  }, [authenticated])
 
   const fetchReport = async (claimId: string) => {
     try {
@@ -99,6 +113,38 @@ export default function AgentPage() {
 
   const formatDate = (date: string) => {
     return new Date(date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+  }
+
+  if (!authenticated) {
+    return (
+      <main className="min-h-screen bg-gradient-to-br from-slate-900 to-blue-900 flex items-center justify-center">
+        <div className="bg-slate-800 rounded-2xl p-10 w-full max-w-sm shadow-2xl border border-slate-700">
+          <div className="text-center mb-8">
+            <p className="text-3xl font-bold text-white mb-1">Claim<span className="text-blue-400">Lens</span></p>
+            <p className="text-slate-400 text-sm">Agent Portal — Restricted Access</p>
+          </div>
+          <div className="space-y-4">
+            <input
+              type="password"
+              placeholder="Enter agent password"
+              value={password}
+              onChange={(e) => { setPassword(e.target.value); setPasswordError(false) }}
+              onKeyDown={(e) => e.key === 'Enter' && handleLogin()}
+              className={`w-full bg-slate-900 text-white rounded-xl px-4 py-3 border focus:outline-none transition ${passwordError ? 'border-red-500 focus:border-red-400' : 'border-slate-600 focus:border-blue-500'}`}
+            />
+            {passwordError && (
+              <p className="text-red-400 text-sm text-center">Incorrect password. Please try again.</p>
+            )}
+            <button
+              onClick={handleLogin}
+              className="w-full bg-blue-600 hover:bg-blue-500 text-white font-semibold py-3 rounded-xl transition"
+            >
+              Login
+            </button>
+          </div>
+        </div>
+      </main>
+    )
   }
 
   return (
