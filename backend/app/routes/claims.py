@@ -7,6 +7,7 @@ from sqlalchemy import select, desc
 from ..database import get_db
 from app.models.claim import Claim
 import uuid
+from ..auth import get_current_agent
 
 router = APIRouter(
     prefix="/claims",
@@ -53,7 +54,7 @@ async def create_claim(claim: ClaimCreate, db: AsyncSession = Depends(get_db)):
     return {"message": "Claim created successfully", "claim": new_claim}
 
 @router.put("/{claim_id}/status")
-async def update_claim_status(claim_id: str, update: ClaimStatusUpdate, db: AsyncSession = Depends(get_db)):
+async def update_claim_status(claim_id: str, update: ClaimStatusUpdate, db: AsyncSession = Depends(get_db), current_agent: str = Depends(get_current_agent)):
     result = await db.execute(select(Claim).where(Claim.id == claim_id))
     claim = result.scalar_one_or_none()
     if not claim:

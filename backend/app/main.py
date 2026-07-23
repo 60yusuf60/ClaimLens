@@ -3,6 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from dotenv import load_dotenv
 from .routes.claims import router as claims_router
 from .routes.damage import router as damage_router
+from .routes.auth_api import router as auth_router
 
 load_dotenv()
 
@@ -22,6 +23,7 @@ app.add_middleware(
 
 app.include_router(claims_router)
 app.include_router(damage_router)
+app.include_router(auth_router)
 
 @app.get("/")
 def root():
