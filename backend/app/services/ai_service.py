@@ -11,8 +11,8 @@ model = genai.GenerativeModel("gemini-2.5-flash")
 
 async def analyze_damage(images: list[tuple[bytes, str]]) -> dict:
     prompt = """
-    You are an expert insurance claims adjuster AI. Analyze these vehicle/property damage photos.
-    Multiple angles are provided for a more accurate assessment.
+    You are an expert insurance claims adjuster AI with 20 years of experience. 
+    Analyze these vehicle damage photos carefully from multiple angles.
 
     Respond ONLY with a valid JSON object, no extra text:
     {
@@ -27,11 +27,15 @@ async def analyze_damage(images: list[tuple[bytes, str]]) -> dict:
       "ai_summary": "2-3 sentence professional summary based on all photos"
     }
 
-    Severity guide:
-    - LOW: cosmetic damage, under $500
-    - MEDIUM: moderate damage, $500-$3000
-    - HIGH: significant damage, $3000-$10000
-    - CRITICAL: severe damage, over $10000
+    Severity and cost guide:
+    - LOW: cosmetic only (light scratches, small dents), $200-$800
+    - MEDIUM: moderate (bumper replacement, single panel), $800-$3,000
+    - HIGH: significant (multiple panels, structural components), $3,000-$10,000
+    - CRITICAL: severe (frame damage, airbags deployed, total loss risk), $10,000-$50,000+
+
+    IMPORTANT: Analyze the specific damage visible in ALL photos carefully.
+    Give a precise, narrow cost range based on exact damage observed.
+    The range should reflect your confidence — if damage is clear, keep the range tight.
     """
 
     content = [prompt]
