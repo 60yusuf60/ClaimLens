@@ -215,9 +215,9 @@ export default function AgentPage() {
         <p className="text-slate-400 text-sm">{claims.length} total claims</p>
       </div>
 
-      <div className="flex h-[calc(100vh-57px)]">
+      <div className="flex h-[calc(100vh-57px)] flex-col md:flex-row">
         <div
-          className="w-96 border-r border-slate-700 overflow-y-auto bg-slate-900 flex flex-col"
+          className={`${selected ? "hidden md:flex" : "flex"} w-full md:w-96 border-r border-slate-700 overflow-y-auto bg-slate-900 flex-col`}
           style={{ scrollbarColor: "#334155 #0f172a" }}
         >
           <div className="p-3 border-b border-slate-700">
@@ -282,7 +282,7 @@ export default function AgentPage() {
           )}
         </div>
 
-        <div className="flex-1 overflow-y-auto p-8">
+        <div className={`${!selected ? "hidden md:block" : "block"} flex-1 overflow-y-auto p-8`}>
           {!selected ? (
             <div className="flex items-center justify-center h-full">
               <div className="text-center">
@@ -297,6 +297,12 @@ export default function AgentPage() {
             </div>
           ) : (
             <div className="max-w-2xl space-y-4">
+              <button
+              onClick={() => setSelected(null)}
+              className="md:hidden mb-4 flex items-center gap-2 text-slate-400 hover:text-white transition text-sm"
+              >
+                ← Back to claims
+              </button>
               <div className="flex items-start justify-between">
                 <div>
                   <h2 className="text-2xl font-bold text-white mb-1">
