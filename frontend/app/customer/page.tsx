@@ -20,6 +20,14 @@ export default function CustomerPage() {
   const incidentTypes = ['Car Accident', 'Hail Damage', 'Flood Damage', 'Theft', 'Vandalism', 'Other']
   const today = new Date().toISOString().split('T')[0]
 
+  const getErrorMessage = async (res: Response, fallback: string) => {
+    try {
+      const data = await res.json()
+      if (typeof data.detail === 'string') return data.detail
+    } catch {}
+    return fallback
+  }
+
   const handleSubmitClaim = async () => {
     setLoading(true)
     try {
@@ -32,13 +40,18 @@ export default function CustomerPage() {
           user_id: 'guest-user',
         }),
       })
+      if (!res.ok) {
+        alert(await getErrorMessage(res, 'Error submitting claim. Please try again.'))
+        return
+      }
       const data = await res.json()
       setClaimId(data.claim.id)
       setStep(2)
     } catch (err) {
       alert('Error submitting claim. Please try again.')
+    } finally {
+      setLoading(false)
     }
-    setLoading(false)
   }
 
   const handleAnalyze = async () => {
@@ -49,15 +62,20 @@ export default function CustomerPage() {
       for (let i = 0; i < files.length; i++) {
         formDataObj.append('files', files[i])
       }
-      await fetch(`${process.env.NEXT_PUBLIC_API_URL}/damage/analyze/${claimId}`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/damage/analyze/${claimId}`, {
         method: 'POST',
         body: formDataObj,
       })
+      if (!res.ok) {
+        alert(await getErrorMessage(res, 'Error analyzing damage. Please try again.'))
+        return
+      }
       router.push(`/customer/result?id=${claimId}`)
     } catch (err) {
       alert('Error analyzing damage. Please try again.')
+    } finally {
+      setLoading(false)
     }
-    setLoading(false)
   }
 
   return (
