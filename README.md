@@ -38,7 +38,7 @@ ClaimLens automates the insurance claims process using AI. Customers upload dama
 
 | Layer | Technology |
 |-------|-----------|
-| Frontend | Next.js 14, TypeScript, Tailwind CSS |
+| Frontend | Next.js 16.2.3, TypeScript, Tailwind CSS |
 | Backend | FastAPI, Python |
 | AI | Google Gemini Vision |
 | Database | PostgreSQL (Supabase) |
@@ -50,7 +50,8 @@ ClaimLens automates the insurance claims process using AI. Customers upload dama
 ```bash
 cd backend
 python -m venv venv
-venv\Scripts\activate
+venv\Scripts\activate          # Windows
+source venv/bin/activate       # macOS/Linux
 pip install -r requirements.txt
 uvicorn app.main:app --port 8001
 ```
@@ -65,13 +66,32 @@ npm run dev
 ### Environment Variables
 
 Create `backend/.env`:
+```env
 DATABASE_URL=your_supabase_connection_string
 GEMINI_API_KEY=your_google_gemini_api_key
 SUPABASE_URL=your_supabase_project_url
 SUPABASE_SERVICE_KEY=your_supabase_service_role_key
+JWT_SECRET_KEY=your_random_secret_key
+AGENT_USERNAME=admin
+AGENT_PASSWORD_HASH=your_bcrypt_password_hash
+```
+
+To generate `AGENT_PASSWORD_HASH`, run this from the `backend` folder with the virtual environment activated:
+```bash
+python -c "from passlib.hash import bcrypt; print(bcrypt.hash('your_password'))"
+```
 
 Create `frontend/.env.local`:
+```env
 NEXT_PUBLIC_API_URL=http://localhost:8001
+```
+
+### Database & Storage Setup
+
+The database schema and storage bucket are not created automatically. Before running the app, create them manually in your Supabase project:
+
+- **Database tables:** `Claim` and `DamageReport`, matching the models in `backend/app/models/claim.py`
+- **Storage bucket:** a private bucket named `claim-photos`
 
 ## Live Demo
 
