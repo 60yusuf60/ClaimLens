@@ -43,13 +43,14 @@ function ResultContent() {
           <div className="w-10 h-10 bg-green-500 rounded-full flex items-center justify-center text-white font-bold shrink-0">✓</div>
           <div>
             <h1 className="text-lg font-bold text-white">Claim Successfully Submitted</h1>
-            <p className="text-green-100 text-sm">AI damage analysis complete — your claim is under review</p>
+            <p className="text-green-100 text-sm">An agent will review it shortly.</p>
           </div>
         </div>
 
-        {!report && (
+        {!report && claimId && (
           <div className="card">
-            <p className="text-slate-300 text-sm">Your claim was received. An agent will review it shortly.</p>
+            <p className="text-slate-400 text-xs uppercase tracking-wider mb-1">Claim ID</p>
+            <p className="text-white font-mono text-sm">{claimId}</p>
           </div>
         )}
 
