@@ -25,13 +25,13 @@ class ClaimStatusUpdate(BaseModel):
     status: str
 
 @router.get("/")
-async def get_claims(db: AsyncSession = Depends(get_db)):
+async def get_claims(db: AsyncSession = Depends(get_db), current_agent: str = Depends(get_current_agent)):
     result = await db.execute(select(Claim).order_by(desc(Claim.created_at)))
     claims = result.scalars().all()
     return {"claims": claims}
 
 @router.get("/{claim_id}")
-async def get_claim(claim_id: str, db: AsyncSession = Depends(get_db)):
+async def get_claim(claim_id: str, db: AsyncSession = Depends(get_db), current_agent: str = Depends(get_current_agent)):
     result = await db.execute(select(Claim).where(Claim.id == claim_id))
     claim = result.scalar_one_or_none()
     if not claim:

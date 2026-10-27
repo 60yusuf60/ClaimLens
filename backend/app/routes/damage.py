@@ -6,6 +6,7 @@ from ..database import get_db
 from ..models.claim import Claim, DamageReport
 from ..services.ai_service import analyze_damage
 from ..services.storage_service import upload_photo
+from ..auth import get_current_agent
 import uuid
 
 router = APIRouter(
@@ -14,7 +15,7 @@ router = APIRouter(
 )
 
 @router.get("/report/{claim_id}")
-async def get_damage_report(claim_id: str, db: AsyncSession = Depends(get_db)):
+async def get_damage_report(claim_id: str, db: AsyncSession = Depends(get_db), current_agent: str = Depends(get_current_agent)):
     result = await db.execute(
         select(DamageReport).where(DamageReport.claim_id == claim_id)
     )
@@ -24,7 +25,7 @@ async def get_damage_report(claim_id: str, db: AsyncSession = Depends(get_db)):
     return {"damage_report": report}
 
 @router.get("/photos/{claim_id}")
-async def get_claim_photos(claim_id: str):
+async def get_claim_photos(claim_id: str, current_agent: str = Depends(get_current_agent)):
     from ..services.storage_service import supabase
     try:
         files = supabase.storage.from_("claim-photos").list(claim_id)
