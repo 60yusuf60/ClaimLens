@@ -1,4 +1,5 @@
 import google.generativeai as genai
+import asyncio
 import os
 import json
 from dotenv import load_dotenv
@@ -42,7 +43,7 @@ async def analyze_damage(images: list[tuple[bytes, str]]) -> dict:
     for image_bytes, mime_type in images:
         content.append({"mime_type": mime_type, "data": image_bytes})
 
-    response = model.generate_content(content)
+    response = await asyncio.to_thread(model.generate_content, content)
     cleaned = response.text.strip().replace("```json", "").replace("```", "").strip()
     result = json.loads(cleaned)
 

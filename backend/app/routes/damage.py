@@ -7,6 +7,7 @@ from ..models.claim import Claim, DamageReport
 from ..services.ai_service import analyze_damage
 from ..services.storage_service import upload_photo
 from ..auth import get_current_agent
+import asyncio
 import uuid
 
 router = APIRouter(
@@ -28,10 +29,11 @@ async def get_damage_report(claim_id: str, db: AsyncSession = Depends(get_db), c
 async def get_claim_photos(claim_id: str, current_agent: str = Depends(get_current_agent)):
     from ..services.storage_service import supabase
     try:
-        files = supabase.storage.from_("claim-photos").list(claim_id)
+        files = await asyncio.to_thread(supabase.storage.from_("claim-photos").list, claim_id)
         urls = []
         for file in files:
-            signed = supabase.storage.from_("claim-photos").create_signed_url(
+            signed = await asyncio.to_thread(
+                supabase.storage.from_("claim-photos").create_signed_url,
                 f"{claim_id}/{file['name']}", 3600
             )
             urls.append(signed['signedURL'])
