@@ -4,8 +4,8 @@ from sqlalchemy import select
 from typing import List
 from ..database import get_db
 from ..models.claim import Claim, DamageReport
-from ..services.ai_service import analyze_damage
-from ..services.storage_service import upload_photo
+from ..services.ai_service import analyze_damage, DamageAnalysisError
+from ..services.storage_service import upload_photo, delete_claim_photos
 from ..auth import get_current_agent
 import asyncio
 import uuid
@@ -65,13 +65,19 @@ async def analyze_claim_damage(
     if existing_report.scalar_one_or_none():
         raise HTTPException(status_code=400, detail="Damage report already exists for this claim")
 
+    # Clear photos left over from a previous failed attempt
+    await delete_claim_photos(claim_id)
+
     images = []
     for i, file in enumerate(files):
         image_bytes = await file.read()
         images.append((image_bytes, file.content_type))
         await upload_photo(image_bytes, claim_id, i, file.content_type)
 
-    ai_result = await analyze_damage(images)
+    try:
+        ai_result = await analyze_damage(images)
+    except DamageAnalysisError as e:
+        raise HTTPException(status_code=502, detail=str(e))
 
     damage_report = DamageReport(
         id=str(uuid.uuid4()),

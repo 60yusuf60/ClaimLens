@@ -7,7 +7,17 @@ from dotenv import load_dotenv
 load_dotenv()
 
 genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
-model = genai.GenerativeModel("gemini-2.5-flash")
+model = genai.GenerativeModel(
+    "gemini-2.5-flash",
+    generation_config={"response_mime_type": "application/json"},
+)
+
+REQUIRED_KEYS = ["damage_type", "severity", "estimated_cost_min", "estimated_cost_max", "confidence_score", "ai_summary"]
+SEVERITY_LEVELS = ["LOW", "MEDIUM", "HIGH", "CRITICAL"]
+
+
+class DamageAnalysisError(Exception):
+    pass
 
 
 async def analyze_damage(images: list[tuple[bytes, str]]) -> dict:
@@ -44,7 +54,42 @@ async def analyze_damage(images: list[tuple[bytes, str]]) -> dict:
         content.append({"mime_type": mime_type, "data": image_bytes})
 
     response = await asyncio.to_thread(model.generate_content, content)
+
+    if response.prompt_feedback.block_reason:
+        raise DamageAnalysisError(
+            "The photos were blocked by the AI safety filter. Please upload different photos."
+        )
+    if not response.candidates:
+        raise DamageAnalysisError("The AI returned no response. Please try again.")
+    finish_reason = response.candidates[0].finish_reason.name
+    if finish_reason == "SAFETY":
+        raise DamageAnalysisError(
+            "The AI response was blocked by the safety filter. Please upload different photos."
+        )
+    if not response.parts:
+        raise DamageAnalysisError(f"The AI returned an empty response (finish reason: {finish_reason}). Please try again.")
+
     cleaned = response.text.strip().replace("```json", "").replace("```", "").strip()
-    result = json.loads(cleaned)
+    try:
+        result = json.loads(cleaned)
+    except json.JSONDecodeError as e:
+        raise DamageAnalysisError("The AI returned an invalid response format. Please try again.") from e
+    if not isinstance(result, dict):
+        raise DamageAnalysisError("The AI returned an invalid response format. Please try again.")
+
+    missing = [key for key in REQUIRED_KEYS if key not in result]
+    if missing:
+        raise DamageAnalysisError(f"The AI response is missing required fields: {', '.join(missing)}.")
+
+    if result["severity"] not in SEVERITY_LEVELS:
+        raise DamageAnalysisError(
+            f"The AI returned an invalid severity '{result['severity']}'. Expected one of: {', '.join(SEVERITY_LEVELS)}."
+        )
+
+    confidence = result["confidence_score"]
+    if isinstance(confidence, bool) or not isinstance(confidence, (int, float)) or not 0 <= confidence <= 1:
+        raise DamageAnalysisError(
+            f"The AI returned an invalid confidence score '{confidence}'. Expected a number between 0 and 1."
+        )
 
     return result
