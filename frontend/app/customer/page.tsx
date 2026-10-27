@@ -70,6 +70,10 @@ export default function CustomerPage() {
         alert(await getErrorMessage(res, 'Error analyzing damage. Please try again.'))
         return
       }
+      const data = await res.json()
+      try {
+        sessionStorage.setItem(`damage-report-${claimId}`, JSON.stringify(data.damage_report))
+      } catch {}
       router.push(`/customer/result?id=${claimId}`)
     } catch (err) {
       alert('Error analyzing damage. Please try again.')

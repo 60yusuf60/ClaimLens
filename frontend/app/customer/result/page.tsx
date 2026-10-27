@@ -1,27 +1,22 @@
 'use client'
 
-import { useEffect, useState, Suspense } from 'react'
+import { useMemo, Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
 
 function ResultContent() {
   const searchParams = useSearchParams()
   const claimId = searchParams.get('id')
-  const [report, setReport] = useState<any>(null)
-  const [loading, setLoading] = useState(true)
-
-  useEffect(() => {
-    if (!claimId) return
-    const fetchData = async () => {
-      try {
-        const reportRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/damage/report/${claimId}`)
-        const reportData = await reportRes.json()
-        setReport(reportData.damage_report)
-      } catch (err) {
-        console.error(err)
-      }
-      setLoading(false)
+  // The report comes from the analyze response saved by the upload page,
+  // since GET /damage/report requires an agent login.
+  const report = useMemo(() => {
+    if (!claimId || typeof window === 'undefined') return null
+    try {
+      const saved = sessionStorage.getItem(`damage-report-${claimId}`)
+      return saved ? JSON.parse(saved) : null
+    } catch (err) {
+      console.error(err)
+      return null
     }
-    fetchData()
   }, [claimId])
 
   const severityColor = (severity: string) => {
@@ -33,16 +28,6 @@ function ResultContent() {
       default: return 'bg-slate-500 text-slate-50'
     }
   }
-
-  if (loading) return (
-    <main className="min-h-screen bg-gradient-to-br from-slate-900 to-blue-900 flex items-center justify-center">
-      <div className="text-center">
-        <div className="text-6xl mb-4 animate-pulse">🔍</div>
-        <p className="text-white text-xl font-semibold">Analyzing damage...</p>
-        <p className="text-slate-400 mt-2">Our AI is processing your photos</p>
-      </div>
-    </main>
-  )
 
   return (
     <main className="min-h-screen bg-gradient-to-br from-slate-900 to-blue-900 flex items-center justify-center py-12 px-8">
@@ -61,6 +46,12 @@ function ResultContent() {
             <p className="text-green-100 text-sm">AI damage analysis complete — your claim is under review</p>
           </div>
         </div>
+
+        {!report && (
+          <div className="card">
+            <p className="text-slate-300 text-sm">Your claim was received. An agent will review it shortly.</p>
+          </div>
+        )}
 
         {report && (
           <div className="space-y-3">

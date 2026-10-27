@@ -43,7 +43,9 @@ export default function AgentPage() {
     if (!authenticated) return;
     const fetchClaims = async () => {
       try {
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/claims/`);
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/claims/`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
         const data = await res.json();
         setClaims(data.claims);
       } catch (err) {
@@ -52,12 +54,13 @@ export default function AgentPage() {
       setLoading(false);
     };
     fetchClaims();
-  }, [authenticated]);
+  }, [authenticated, token]);
 
   const fetchReport = async (claimId: string) => {
     try {
       const res = await fetch(
         `${process.env.NEXT_PUBLIC_API_URL}/damage/report/${claimId}`,
+        { headers: { Authorization: `Bearer ${token}` } },
       );
       const data = await res.json();
       setReport(data.damage_report);
@@ -70,6 +73,7 @@ export default function AgentPage() {
     try {
       const res = await fetch(
         `${process.env.NEXT_PUBLIC_API_URL}/damage/photos/${claimId}`,
+        { headers: { Authorization: `Bearer ${token}` } },
       );
       const data = await res.json();
       setPhotos(data.photos);
